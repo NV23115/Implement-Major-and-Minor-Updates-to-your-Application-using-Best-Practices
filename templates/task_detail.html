@@ -7,6 +7,13 @@
         <div>
           <h3>{{ task.title }}</h3>
           <p class="mb-1">{{ task.description or 'No description provided.' }}</p>
+          {% if task.tags %}
+            <div class="mb-2">
+              {% for tag in task.tags %}
+                <span class="badge bg-info text-dark me-1">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
         <span class="badge bg-{{ 'success' if task.status == 'Completed' else 'warning' if task.status == 'In Progress' else 'secondary' }} fs-6">{{ task.status }}</span>
       </div>
