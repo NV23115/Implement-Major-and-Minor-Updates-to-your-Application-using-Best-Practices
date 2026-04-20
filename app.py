@@ -106,6 +106,12 @@ def sort_tasks(tasks):
 @app.route('/')
 def index():
     q = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', '').strip()
+    priority_filter = request.args.get('priority', '').strip()
+    due_date_from = request.args.get('due_date_from', '').strip()
+    due_date_to = request.args.get('due_date_to', '').strip()
+    sort_by = request.args.get('sort', 'due_date').strip()
+
     tasks = load_tasks()
 
     if q:
@@ -115,8 +121,32 @@ def index():
             if q_lower in task['title'].lower() or q_lower in task['description'].lower()
         ]
 
-    tasks = sort_tasks(tasks)
-    return render_template('index.html', tasks=tasks, q=q)
+    if status_filter:
+        tasks = [task for task in tasks if task['status'] == status_filter]
+
+    if priority_filter:
+        tasks = [task for task in tasks if task['priority'] == priority_filter]
+
+    if due_date_from:
+        from_date = date.fromisoformat(due_date_from)
+        tasks = [task for task in tasks if task['due_date'] and task['due_date'] >= from_date]
+
+    if due_date_to:
+        to_date = date.fromisoformat(due_date_to)
+        tasks = [task for task in tasks if task['due_date'] and task['due_date'] <= to_date]
+
+    # Sorting
+    if sort_by == 'due_date':
+        tasks = sorted(tasks, key=lambda t: (t['due_date'] is None, t['due_date'] or date.max))
+    elif sort_by == 'created_at':
+        tasks = sorted(tasks, key=lambda t: t['created_at'], reverse=True)
+    elif sort_by == 'priority':
+        priority_order = {'Low': 1, 'Medium': 2, 'High': 3}
+        tasks = sorted(tasks, key=lambda t: priority_order.get(t['priority'], 0), reverse=True)
+    else:
+        tasks = sort_tasks(tasks)  # default
+
+    return render_template('index.html', tasks=tasks, q=q, status_filter=status_filter, priority_filter=priority_filter, due_date_from=due_date_from, due_date_to=due_date_to, sort_by=sort_by)
 
 
 @app.route('/task/new', methods=['GET', 'POST'])
