@@ -1,15 +1,13 @@
 # Flask ToDo App
 
-A simple Flask-based ToDo application implementing task metadata, search, and tag filtering.
+A simple Flask ToDo application using file-based JSON persistence instead of a database.
 
 ## Features
 
 - Create, edit, and delete tasks
-- Task description, priority, due date, and status
+- Task title, description, priority, status, and due date
 - Search tasks by title and description
-- Tag tasks and filter by tag
-- SQLite persistence
-- Docker container support
+- Persistent storage in `todo.json`
 
 ## Run locally
 
@@ -23,11 +21,11 @@ A simple Flask-based ToDo application implementing task metadata, search, and ta
    ```
 3. Open `http://127.0.0.1:5000`
 
-## Docker
+## Storage
 
-Build and run:
+Tasks are saved to a local JSON file named `todo.json` in the repository root.
 
-```bash
-docker build -t todo-saas:0.1.0 .
-docker run -p 5000:5000 todo-saas:0.1.0
-```
+## Notes
+
+- No SQL database is required.
+- Task metadata is persisted as JSON.

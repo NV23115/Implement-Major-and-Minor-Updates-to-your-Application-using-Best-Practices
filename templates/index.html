@@ -2,61 +2,32 @@
 
 {% block content %}
   <div class="row mb-3">
-    <div class="col-md-8">
+    <div class="col-md-12">
       <form class="row g-2" method="get" action="{{ url_for('index') }}">
-        <div class="col-md-5">
+        <div class="col-md-10">
           <input type="text" class="form-control" name="q" placeholder="Search title or description" value="{{ q }}">
         </div>
-        <div class="col-md-4">
-          <select class="form-select" name="tag">
-            <option value="">All tags</option>
-            {% for tag in tags %}
-              <option value="{{ tag.id }}" {% if selected_tag == tag.id %}selected{% endif %}>{{ tag.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <button type="submit" class="btn btn-primary w-100">Search</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-lg-8">
-      {% if tasks %}
-        <div class="list-group">
-          {% for task in tasks %}
-            <a href="{{ url_for('task_detail', task_id=task.id) }}" class="list-group-item list-group-item-action mb-2">
-              <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">{{ task.title }}</h5>
-                <span class="badge bg-{{ 'success' if task.status == 'Completed' else 'warning' if task.status == 'In Progress' else 'secondary' }}">{{ task.status }}</span>
-              </div>
-              <p class="mb-1 text-truncate">{{ task.description }}</p>
-              <small>Priority: {{ task.priority }}{% if task.due_date %} | Due {{ task.due_date.strftime('%Y-%m-%d') }}{% endif %}</small>
-            </a>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="alert alert-light">No tasks found. Create one to get started.</div>
-      {% endif %}
+  {% if tasks %}
+    <div class="list-group">
+      {% for task in tasks %}
+        <a href="{{ url_for('task_detail', task_id=task.id) }}" class="list-group-item list-group-item-action mb-2">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ task.title }}</h5>
+            <span class="badge bg-{{ 'success' if task.status == 'Completed' else 'warning' if task.status == 'In Progress' else 'secondary' }}">{{ task.status }}</span>
+          </div>
+          <p class="mb-1 text-truncate">{{ task.description or 'No description' }}</p>
+          <small>Priority: {{ task.priority }}{% if task.due_date %} | Due {{ task.due_date.strftime('%Y-%m-%d') }}{% endif %}</small>
+        </a>
+      {% endfor %}
     </div>
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Tags</h5>
-          {% if tags %}
-            <div class="mb-2">
-              {% for tag in tags %}
-                <a href="{{ url_for('index', tag=tag.id) }}" class="badge rounded-pill bg-info text-dark me-1">{{ tag.name }}</a>
-              {% endfor %}
-            </div>
-          {% else %}
-            <p class="card-text">No tags yet.</p>
-          {% endif %}
-          <p class="card-text">Search by text or click a tag to filter tasks.</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  {% else %}
+    <div class="alert alert-light">No tasks found.</div>
+  {% endif %}
 {% endblock %}
