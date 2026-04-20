@@ -57,6 +57,7 @@ def normalize_task(task):
         'due_date': due_date,
         'created_at': created_at,
         'updated_at': updated_at,
+        'tags': task.get('tags', []),
     }
 
 
@@ -70,6 +71,7 @@ def serialize_task(task):
         'due_date': task['due_date'].isoformat() if task['due_date'] else '',
         'created_at': task['created_at'].isoformat(),
         'updated_at': task['updated_at'].isoformat(),
+        'tags': task['tags'],
     }
 
 
@@ -110,6 +112,7 @@ def index():
     priority_filter = request.args.get('priority', '').strip()
     due_date_from = request.args.get('due_date_from', '').strip()
     due_date_to = request.args.get('due_date_to', '').strip()
+    tag_filter = request.args.get('tag', '').strip()
     sort_by = request.args.get('sort', 'due_date').strip()
 
     tasks = load_tasks()
@@ -135,6 +138,9 @@ def index():
         to_date = date.fromisoformat(due_date_to)
         tasks = [task for task in tasks if task['due_date'] and task['due_date'] <= to_date]
 
+    if tag_filter:
+        tasks = [task for task in tasks if tag_filter in task['tags']]
+
     # Sorting
     if sort_by == 'due_date':
         tasks = sorted(tasks, key=lambda t: (t['due_date'] is None, t['due_date'] or date.max))
@@ -146,7 +152,13 @@ def index():
     else:
         tasks = sort_tasks(tasks)  # default
 
-    return render_template('index.html', tasks=tasks, q=q, status_filter=status_filter, priority_filter=priority_filter, due_date_from=due_date_from, due_date_to=due_date_to, sort_by=sort_by)
+    # Get unique tags for filter dropdown
+    all_tags = set()
+    for task in load_tasks():
+        all_tags.update(task['tags'])
+    tags = sorted(list(all_tags))
+
+    return render_template('index.html', tasks=tasks, q=q, status_filter=status_filter, priority_filter=priority_filter, due_date_from=due_date_from, due_date_to=due_date_to, tag_filter=tag_filter, sort_by=sort_by, tags=tags)
 
 
 @app.route('/task/new', methods=['GET', 'POST'])
@@ -159,6 +171,7 @@ def create_task():
 
         tasks = load_tasks()
         now = datetime.utcnow()
+        tags = [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()]
         task = {
             'id': next_task_id(tasks),
             'title': title,
@@ -168,6 +181,7 @@ def create_task():
             'due_date': parse_date(request.form.get('due_date')),
             'created_at': now,
             'updated_at': now,
+            'tags': tags,
         }
         tasks.append(task)
         save_tasks(tasks)
@@ -193,6 +207,7 @@ def edit_task(task_id):
         task['priority'] = request.form.get('priority', 'Medium') if request.form.get('priority') in PRIORITY_CHOICES else 'Medium'
         task['status'] = request.form.get('status', 'Pending') if request.form.get('status') in STATUS_CHOICES else 'Pending'
         task['due_date'] = parse_date(request.form.get('due_date'))
+        task['tags'] = [tag.strip() for tag in request.form.get('tags', '').split(',') if tag.strip()]
         task['updated_at'] = datetime.utcnow()
 
         save_tasks(tasks)

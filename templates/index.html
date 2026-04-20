@@ -4,7 +4,7 @@
   <div class="row mb-3">
     <div class="col-md-12">
       <form class="row g-2" method="get" action="{{ url_for('index') }}">
-        <div class="col-md-3">
+        <div class="col-md-2">
           <input type="text" class="form-control" name="q" placeholder="Search title or description" value="{{ q }}">
         </div>
         <div class="col-md-2">
@@ -24,13 +24,18 @@
           </select>
         </div>
         <div class="col-md-2">
+          <select class="form-select" name="tag">
+            <option value="">All Tags</option>
+            {% for tag in tags %}
+              <option value="{{ tag }}" {% if tag_filter == tag %}selected{% endif %}>{{ tag }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
           <input type="date" class="form-control" name="due_date_from" placeholder="Due From" value="{{ due_date_from }}">
         </div>
         <div class="col-md-2">
           <input type="date" class="form-control" name="due_date_to" placeholder="Due To" value="{{ due_date_to }}">
-        </div>
-        <div class="col-md-1">
-          <button type="submit" class="btn btn-primary w-100">Filter</button>
         </div>
       </form>
     </div>
@@ -67,6 +72,13 @@
             <span class="badge bg-{{ 'success' if task.status == 'Completed' else 'warning' if task.status == 'In Progress' else 'secondary' }}">{{ task.status }}</span>
           </div>
           <p class="mb-1 text-truncate">{{ task.description or 'No description' }}</p>
+          {% if task.tags %}
+            <div class="mb-1">
+              {% for tag in task.tags %}
+                <span class="badge bg-info text-dark me-1">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
           <small>Priority: {{ task.priority }}{% if task.due_date %} | Due {{ task.due_date.strftime('%Y-%m-%d') }}{% endif %}</small>
         </a>
       {% endfor %}
