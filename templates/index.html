@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="row mb-3">
+    <div class="col-md-12">
+      <form class="row g-2" method="get" action="{{ url_for('index') }}">
+        <div class="col-md-10">
+          <input type="text" class="form-control" name="q" placeholder="Search title or description" value="{{ q }}">
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if tasks %}
+    <div class="list-group">
+      {% for task in tasks %}
+        <a href="{{ url_for('task_detail', task_id=task.id) }}" class="list-group-item list-group-item-action mb-2">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ task.title }}</h5>
+            <span class="badge bg-{{ 'success' if task.status == 'Completed' else 'warning' if task.status == 'In Progress' else 'secondary' }}">{{ task.status }}</span>
+          </div>
+          <p class="mb-1 text-truncate">{{ task.description or 'No description' }}</p>
+          <small>Priority: {{ task.priority }}{% if task.due_date %} | Due {{ task.due_date.strftime('%Y-%m-%d') }}{% endif %}</small>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-light">No tasks found.</div>
+  {% endif %}
+{% endblock %}
